@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #1A0800;
+  --background: #FAF0DC;
+}
+
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  font-family: var(--font-poppins), sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF0DC;
+}
+::-webkit-scrollbar-thumb {
+  background: #C4622D;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #E07A47;
+}
+
+@layer utilities {
+  .text-spice-gradient {
+    background: linear-gradient(135deg, #F5C055, #C4622D, #F4650A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-cream-gradient {
+    background: linear-gradient(180deg, #1A0800, #4A2E1B);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-warm-dark {
+    background: radial-gradient(ellipse at top, #FDF7EA 0%, #FAF0DC 70%);
+  }
+
+  .card-warm {
+    @apply bg-mahogany-card border border-border rounded-2xl;
+  }
+
+  .spice-glow {
+    box-shadow: 0 0 30px rgba(196,98,45,0.12);
+  }
+
+  .mandala-fade {
+    mask-image: radial-gradient(circle, black 40%, transparent 75%);
+    -webkit-mask-image: radial-gradient(circle, black 40%, transparent 75%);
+  }
+}
