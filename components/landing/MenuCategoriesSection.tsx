@@ -71,28 +71,65 @@ export default function MenuCategoriesSection() {
     hover: { x: 0, opacity: 1, transition: { duration: 0.25 } },
   };
 
+  const gridContainerVariants = {
+    initial: {},
+    animate: {
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    initial: { opacity: 0, y: 30 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: [0.25, 1, 0.5, 1] },
+    },
+  };
+
   return (
-    <section className="py-32 bg-mahogany-surface border-t border-border/20 overflow-hidden">
+    <section className="py-32 bg-mahogany-surface/30 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         {/* Title centered */}
         <div className="text-center mb-16">
-          <h2 className="font-display text-4xl md:text-5xl text-cream tracking-wide">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="font-display text-4xl md:text-5xl text-cream tracking-wide"
+          >
             Explore Our Menu
-          </h2>
-          <span className="font-devanagari text-base text-cream-muted tracking-wide mt-2 block">
+          </motion.h2>
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="font-devanagari text-base text-cream-muted tracking-wide mt-2 block"
+          >
             व्यंजन सूची
-          </span>
+          </motion.span>
         </div>
 
         {/* Grid of Categories */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <motion.div
+          variants={gridContainerVariants}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           {categories.map((cat) => (
-            <Link key={cat.id} href={`/menu?category=${cat.id}`} className="block group">
-              <motion.div
-                variants={cardVariants}
-                whileHover="hover"
-                className="aspect-[4/3] rounded-2xl overflow-hidden relative border border-border/60 hover:border-spice/50 transition-colors duration-300 shadow-xl cursor-pointer"
-              >
+            <motion.div key={cat.id} variants={itemVariants}>
+              <Link href={`/menu?category=${cat.id}`} className="block group">
+                <motion.div
+                  variants={cardVariants}
+                  whileHover="hover"
+                  className="aspect-[4/3] rounded-2xl overflow-hidden relative border border-border/60 hover:border-spice/50 transition-colors duration-300 shadow-xl cursor-pointer"
+                >
                 {/* Full-bleed category background image */}
                 <Image
                   src={cat.image}
@@ -132,8 +169,9 @@ export default function MenuCategoriesSection() {
                 </div>
               </motion.div>
             </Link>
+          </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

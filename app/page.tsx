@@ -8,6 +8,7 @@ import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import ReferralBannerSection from "@/components/landing/ReferralBannerSection";
 import CTASection from "@/components/landing/CTASection";
 import Footer from "@/components/layout/Footer";
+import SectionDivider from "@/components/landing/SectionDivider";
 
 export default function Home() {
   return (
@@ -21,21 +22,33 @@ export default function Home() {
 
         {/* Feature Highlights Grid */}
         <FeaturesSection />
+        
+        <SectionDivider />
 
         {/* Bestseller Food Showcase Slider */}
         <FoodShowcaseSlider />
 
+        <SectionDivider />
+
         {/* Asymmetric Our Story Heritage Section */}
         <OurStorySection />
+
+        <SectionDivider />
 
         {/* Swiper Menu Categories Grid */}
         <MenuCategoriesSection />
 
+        <SectionDivider />
+
         {/* Testimonials Review Slider */}
         <TestimonialsSection />
 
+        <SectionDivider />
+
         {/* Terracotta Referral rewards section */}
         <ReferralBannerSection />
+
+        <SectionDivider />
 
         {/* Royal Table Reservations Section */}
         <CTASection />

@@ -22,13 +22,19 @@ export default function CTASection() {
   };
 
   return (
-    <section id="reservations" className="py-24 bg-mahogany overflow-hidden border-t border-border/20 relative">
+    <section id="reservations" className="py-24 bg-mahogany overflow-hidden relative">
       {/* Background soft lighting glow */}
       <div className="absolute left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-spice/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center relative z-10">
         {/* Left Info Column */}
-        <div className="lg:col-span-5 text-left">
+        <motion.div
+          initial={{ opacity: 0, y: 35 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="lg:col-span-5 text-left"
+        >
           <span className="font-body text-xs md:text-sm font-semibold text-spice uppercase tracking-[0.25em] mb-3 block">
             Table Booking
           </span>
@@ -64,10 +70,16 @@ export default function CTASection() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Form Card */}
-        <div className="lg:col-span-7 w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 35 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="lg:col-span-7 w-full"
+        >
           <div className="card-warm p-8 border border-border bg-mahogany-card relative">
             <AnimatePresence mode="wait">
               {!isBooked ? (
@@ -203,7 +215,7 @@ export default function CTASection() {
               )}
             </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

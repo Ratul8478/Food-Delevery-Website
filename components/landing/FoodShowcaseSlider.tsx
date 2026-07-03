@@ -97,23 +97,41 @@ export default function FoodShowcaseSlider() {
   ];
 
   return (
-    <section className="py-24 bg-mahogany overflow-hidden border-t border-border/20">
+    <section className="py-24 bg-mahogany overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 mb-12 flex flex-col items-start md:flex-row md:items-end justify-between gap-4">
         {/* Title Block */}
-        <div>
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
           <h2 className="font-display text-4xl text-cream tracking-wide">
             Our Bestsellers
           </h2>
           <span className="font-devanagari text-base text-cream-muted tracking-wide mt-1 block">
             हमारे बेस्टसेलर्स
           </span>
-        </div>
-        <p className="font-body text-sm text-cream-muted max-w-sm">
+        </motion.div>
+        
+        <motion.p
+          initial={{ opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="font-body text-sm text-cream-muted max-w-sm"
+        >
           Highly recommended signatures, prepared using authentic tandoor techniques and hand-ground spice blends.
-        </p>
+        </motion.p>
       </div>
 
-      <div className="pl-6 md:pl-12 lg:pl-20">
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7, delay: 0.25 }}
+        className="pl-6 md:pl-12 lg:pl-20"
+      >
         <Swiper
           modules={[Autoplay]}
           autoplay={{ delay: 3000, disableOnInteraction: false }}
@@ -232,7 +250,7 @@ export default function FoodShowcaseSlider() {
             </SwiperSlide>
           ))}
         </Swiper>
-      </div>
+      </motion.div>
     </section>
   );
 }

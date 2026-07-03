@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Yeseva_One, Poppins, Noto_Sans_Devanagari, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/lib/cart-context";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const yesevaOne = Yeseva_One({
   weight: "400",
@@ -48,6 +49,7 @@ export default function RootLayout({
     >
       <body className="font-body bg-mahogany text-cream antialiased">
         <CartProvider>
+          <SmoothScroll />
           {children}
         </CartProvider>
       </body>

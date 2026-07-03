@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 
 export default function OurStorySection() {
   return (
-    <section id="our-story" className="relative bg-mahogany-surface py-32 overflow-hidden border-t border-border/20">
+    <section id="our-story" className="relative bg-mahogany-surface/30 py-32 overflow-hidden">
       {/* Decorative faint background mandala in top-right */}
       <div className="absolute top-[-50px] right-[-100px] w-[350px] h-[350px] text-spice opacity-[0.03] pointer-events-none z-0">
         <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="0.8">
@@ -21,10 +21,10 @@ export default function OurStorySection() {
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center relative z-10">
         {/* LEFT — Image composition (45% column span: lg:col-span-5) */}
         <motion.div
-          initial={{ x: -100, opacity: 0 }}
-          whileInView={{ x: 0, opacity: 1 }}
+          initial={{ y: 50, rotate: -1.5, opacity: 0 }}
+          whileInView={{ y: 0, rotate: 0, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
           className="lg:col-span-5 relative flex justify-center lg:justify-start"
         >
           {/* Main Image */}
@@ -52,10 +52,10 @@ export default function OurStorySection() {
 
         {/* RIGHT — Content (55% column span: lg:col-span-7) */}
         <motion.div
-          initial={{ x: 100, opacity: 0 }}
-          whileInView={{ x: 0, opacity: 1 }}
+          initial={{ y: 40, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+          transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1], delay: 0.15 }}
           className="lg:col-span-7 flex flex-col items-start"
         >
           <span className="font-body text-xs md:text-sm font-semibold text-spice uppercase tracking-[0.25em] mb-3">
