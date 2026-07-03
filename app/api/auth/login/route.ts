@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/utils/supabase/admin";
+import { mockDb } from "@/utils/mockDb";
 
 export async function POST(request: Request) {
   try {
@@ -48,15 +49,28 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: "Invalid credentials" }, { status: 400 });
         }
 
-        sessionData = {
-          userId: "usr_mock_123",
-          fullName: "Rajesh Kumar",
-          email: email,
-          phone: "9876543210",
-          verified: true,
-          role: "customer",
-          referralCode: "SPICE8Y2",
-        };
+        const mockProfile = mockDb.getProfileByEmail(email);
+        if (mockProfile) {
+          sessionData = {
+            userId: mockProfile.id,
+            fullName: mockProfile.full_name,
+            email: mockProfile.email,
+            phone: mockProfile.phone,
+            verified: mockProfile.email_verified && mockProfile.phone_verified,
+            role: mockProfile.role,
+            referralCode: mockProfile.referral_code,
+          };
+        } else {
+          sessionData = {
+            userId: "usr_mock_123",
+            fullName: "Rajesh Kumar",
+            email: email,
+            phone: "9876543210",
+            verified: true,
+            role: "customer",
+            referralCode: "SPICE8Y2",
+          };
+        }
       }
     } else if (method === "otp") {
       if (!phone) {
@@ -87,19 +101,32 @@ export async function POST(request: Request) {
         };
       } else {
         // Mock phone check
-        if (phone === "9999999999") {
-          return NextResponse.json({ error: "Mobile number not registered" }, { status: 400 });
-        }
+        const mockProfile = mockDb.getProfileByPhone(phone);
+        if (mockProfile) {
+          sessionData = {
+            userId: mockProfile.id,
+            fullName: mockProfile.full_name,
+            email: mockProfile.email,
+            phone: mockProfile.phone,
+            verified: mockProfile.email_verified && mockProfile.phone_verified,
+            role: mockProfile.role,
+            referralCode: mockProfile.referral_code,
+          };
+        } else {
+          if (phone === "9999999999") {
+            return NextResponse.json({ error: "Mobile number not registered" }, { status: 400 });
+          }
 
-        sessionData = {
-          userId: "usr_mock_123",
-          fullName: "Rajesh Kumar",
-          email: "rajesh.kumar@gmail.com",
-          phone: phone,
-          verified: true,
-          role: "customer",
-          referralCode: "SPICE8Y2",
-        };
+          sessionData = {
+            userId: "usr_mock_123",
+            fullName: "Rajesh Kumar",
+            email: "rajesh.kumar@gmail.com",
+            phone: phone,
+            verified: true,
+            role: "customer",
+            referralCode: "SPICE8Y2",
+          };
+        }
       }
     } else {
       return NextResponse.json({ error: "Invalid authentication method" }, { status: 400 });

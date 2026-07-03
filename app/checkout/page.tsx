@@ -10,6 +10,7 @@ import { useCart } from "@/lib/cart-context";
 import PaymentSection from "@/components/checkout/PaymentSection";
 import StripePaymentForm from "@/components/checkout/StripePaymentForm";
 import Link from "next/link";
+import { calculateOrderTotal } from "@/lib/price-calculation";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -101,19 +102,17 @@ export default function CheckoutPage() {
 
   // Pricing calculations based on real cart items
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  
-  // Calculate discount percent based on user's tier
-  const discountPercent = isAuthenticated && user ? (
-    user.discount_tier === "diamond" ? 60 :
-    user.discount_tier === "platinum" ? 50 :
-    user.discount_tier === "gold" ? 40 :
-    user.discount_tier === "silver" ? 30 : 20
-  ) : 0;
 
-  const discountAmount = Math.round(subtotal * (discountPercent / 100));
-  const deliveryCharge = subtotal > 0 && subtotal - discountAmount < 500 ? 50 : 0;
-  const gstTax = Math.round((subtotal - discountAmount) * 0.05);
-  const totalAmount = subtotal - discountAmount + deliveryCharge + gstTax;
+  const calcResult = calculateOrderTotal({
+    subtotal,
+    discountTier: isAuthenticated && user ? user.discount_tier : null,
+    paymentMethod: paymentMethod === "cod" ? "cod" : "stripe",
+    codEnabled: isCodEnabled,
+    maxCodAmount,
+  });
+
+  const { discountAmount, taxAmount: gstTax, deliveryCharge, totalAmount, discountRate } = calcResult;
+  const discountPercent = Math.round(discountRate * 100);
 
   // Handles placing the order in the DB (for COD or Online payment initial step)
   const placeOrder = async (method: "cod" | "stripe", type?: "card" | "upi" | "wallet"): Promise<any> => {

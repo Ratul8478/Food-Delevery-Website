@@ -4,6 +4,7 @@ import { createSupabaseServer } from "@/lib/supabase-server";
 import { mockDb } from "@/utils/mockDb";
 import { errorResponse, successResponse } from "@/lib/api-response";
 import { z } from "zod";
+import { calculateOrderTotal } from "@/lib/price-calculation";
 
 const createOrderSchema = z.object({
   address_id: z.string().min(1, "Address is required"),
@@ -91,46 +92,43 @@ export async function POST(request: Request) {
       });
     }
 
-    // Discount Tiers: Bronze(20%), Silver(30%), Gold(40%), Platinum(50%), Diamond(60%)
-    const discountMap = { bronze: 0.2, silver: 0.3, gold: 0.4, platinum: 0.5, diamond: 0.6 };
-    const discountRate = discountMap[profile.discount_tier || "bronze"] || 0.2;
-    const discountAmount = Math.round(subtotal * discountRate);
+    // 4. Retrieve COD Settings & Limits
+    let codEnabled = false;
+    let maxCodAmount = 500.00; // default cap from schema
 
-    const taxAmount = Math.round((subtotal - discountAmount) * 0.05); // 5% GST
-    const deliveryCharge = 50; // ₹50 flat
-    const totalAmount = subtotal - discountAmount + taxAmount + deliveryCharge;
-
-    // 4. COD Settings & Limits Checks
-    if (parsed.payment_method === "cod") {
-      let codEnabled = false;
-      let maxCodAmount = 500.00; // default cap from schema
-
-      if (!isMock) {
-        const supabase = createSupabaseServer();
-        const { data: settings } = await supabase
-          .from("customer_settings")
-          .select("cod_enabled, max_cod_amount")
-          .eq("user_id", profile.id)
-          .maybeSingle();
-        
-        codEnabled = !!settings?.cod_enabled;
-        if (settings?.max_cod_amount !== undefined && settings?.max_cod_amount !== null) {
-          maxCodAmount = Number(settings.max_cod_amount);
-        }
-      } else {
-        const settings = mockDb.getCustomerSettings(profile.id);
-        codEnabled = settings.cod_enabled;
-        maxCodAmount = settings.max_cod_amount || 500.00;
+    if (!isMock) {
+      const supabase = createSupabaseServer();
+      const { data: settings } = await supabase
+        .from("customer_settings")
+        .select("cod_enabled, max_cod_amount")
+        .eq("user_id", profile.id)
+        .maybeSingle();
+      
+      codEnabled = !!settings?.cod_enabled;
+      if (settings?.max_cod_amount !== undefined && settings?.max_cod_amount !== null) {
+        maxCodAmount = Number(settings.max_cod_amount);
       }
-
-      if (!codEnabled) {
-        return errorResponse("Cash on Delivery is currently disabled for your account. Please pay online.", 403, "COD_DISABLED");
-      }
-
-      if (totalAmount > maxCodAmount) {
-        return errorResponse(`Cash on Delivery is only available for orders up to ₹${maxCodAmount}.`, 400, "COD_LIMIT_EXCEEDED");
-      }
+    } else {
+      const settings = mockDb.getCustomerSettings(profile.id);
+      codEnabled = settings.cod_enabled;
+      maxCodAmount = settings.max_cod_amount || 500.00;
     }
+
+    // 5. Compute calculations and validate settings
+    const calcResult = calculateOrderTotal({
+      subtotal,
+      discountTier: profile.discount_tier,
+      paymentMethod: parsed.payment_method,
+      codEnabled,
+      maxCodAmount,
+    });
+
+    if (calcResult.error) {
+      const status = calcResult.errorCode === "COD_DISABLED" ? 403 : 400;
+      return errorResponse(calcResult.error, status, calcResult.errorCode || "PRICING_ERROR");
+    }
+
+    const { discountAmount, taxAmount: taxAmount, deliveryCharge, totalAmount } = calcResult;
 
     let order: any;
 

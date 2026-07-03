@@ -68,8 +68,9 @@ export function calculateOrderTotal(options: PriceCalcOptions): PriceCalcResult 
   // 3. 5% GST
   const taxAmount = Math.round(taxableAmount * 0.05);
   
-  // 4. Delivery charge flat ₹50
-  const totalAmount = taxableAmount + taxAmount + deliveryCharge;
+  // 4. Delivery charge: Free for orders >= ₹500 (after discount), otherwise the passed delivery charge (default ₹50).
+  const finalDeliveryCharge = (subtotal > 0 && taxableAmount < 500) ? deliveryCharge : 0;
+  const totalAmount = taxableAmount + taxAmount + finalDeliveryCharge;
 
   // 5. COD validity check
   if (paymentMethod === "cod") {
@@ -79,7 +80,7 @@ export function calculateOrderTotal(options: PriceCalcOptions): PriceCalcResult 
         discountRate,
         discountAmount,
         taxAmount,
-        deliveryCharge,
+        deliveryCharge: finalDeliveryCharge,
         totalAmount,
         error: "Cash on Delivery is currently disabled for your account. Please pay online.",
         errorCode: "COD_DISABLED",
@@ -91,7 +92,7 @@ export function calculateOrderTotal(options: PriceCalcOptions): PriceCalcResult 
         discountRate,
         discountAmount,
         taxAmount,
-        deliveryCharge,
+        deliveryCharge: finalDeliveryCharge,
         totalAmount,
         error: `Cash on Delivery is only available for orders up to ₹${maxCodAmount}.`,
         errorCode: "COD_LIMIT_EXCEEDED",
@@ -104,7 +105,7 @@ export function calculateOrderTotal(options: PriceCalcOptions): PriceCalcResult 
     discountRate,
     discountAmount,
     taxAmount,
-    deliveryCharge,
+    deliveryCharge: finalDeliveryCharge,
     totalAmount,
   };
 }

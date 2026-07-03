@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/utils/supabase/admin";
+import { mockDb } from "@/utils/mockDb";
 
 export async function POST(request: Request) {
   try {
@@ -44,14 +45,17 @@ export async function POST(request: Request) {
       }
     } else {
       // Mock mode for local execution
-      if (email && email.toLowerCase().includes("taken")) {
+      if (email && (email.toLowerCase().includes("taken") || mockDb.getProfileByEmail(email))) {
         return NextResponse.json({ error: "Email already registered" }, { status: 400 });
       }
-      if (phone && phone.includes("9999")) {
+      if (phone && (phone.includes("9999") || mockDb.getProfileByPhone(phone))) {
         return NextResponse.json({ error: "Mobile number already registered" }, { status: 400 });
       }
-      if (referral_code && referral_code !== "SPICE8Y2" && referral_code !== "SPICE123") {
-        return NextResponse.json({ error: "Invalid referral code" }, { status: 400 });
+      if (referral_code) {
+        const refProfile = mockDb.getProfiles().find(p => p.referral_code === referral_code);
+        if (referral_code !== "SPICE8Y2" && referral_code !== "SPICE123" && !refProfile) {
+          return NextResponse.json({ error: "Invalid referral code" }, { status: 400 });
+        }
       }
     }
 
