@@ -3,6 +3,7 @@ import { Yeseva_One, Poppins, Noto_Sans_Devanagari, JetBrains_Mono } from "next/
 import "./globals.css";
 import { CartProvider } from "@/lib/cart-context";
 import SmoothScroll from "@/components/SmoothScroll";
+import AutoRefresh from "@/components/AutoRefresh";
 
 const yesevaOne = Yeseva_One({
   weight: "400",
@@ -50,6 +51,7 @@ export default function RootLayout({
       <body className="font-body bg-mahogany text-cream antialiased">
         <CartProvider>
           <SmoothScroll />
+          <AutoRefresh />
           {children}
         </CartProvider>
       </body>
