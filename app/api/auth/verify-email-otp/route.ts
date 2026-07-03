@@ -53,28 +53,33 @@ export async function POST(request: Request) {
         .eq("id", record.id);
 
     } else {
-      // Mock mode logic
+      // Mock mode logic — accept deterministic "123456" as universal bypass
+      // for serverless environments where in-memory otpStore may be lost
       const record = otpStore.getEmailOtp(email);
-      if (!record) {
-        return NextResponse.json({ error: "Invalid OTP or code expired. Please resend." }, { status: 400 });
-      }
 
-      otpStore.incrementEmailAttempts(email);
-      if (record.attempts >= 5) {
-        return NextResponse.json({ error: "Too many attempts. Please request a new OTP." }, { status: 429 });
-      }
+      if (record) {
+        // otpStore has state — validate normally
+        otpStore.incrementEmailAttempts(email);
+        if (record.attempts >= 5) {
+          return NextResponse.json({ error: "Too many attempts. Please request a new OTP." }, { status: 429 });
+        }
 
-      if (Date.now() > record.expiresAt) {
+        if (Date.now() > record.expiresAt) {
+          otpStore.clearEmailOtp(email);
+          return NextResponse.json({ error: "OTP expired, please resend" }, { status: 410 });
+        }
+
+        if (record.code !== otp) {
+          return NextResponse.json({ error: "Invalid OTP code" }, { status: 400 });
+        }
+
         otpStore.clearEmailOtp(email);
-        return NextResponse.json({ error: "OTP expired, please resend" }, { status: 410 });
+      } else {
+        // otpStore lost state (serverless cold start) — accept deterministic mock OTP
+        if (otp !== "123456") {
+          return NextResponse.json({ error: "Invalid OTP code. In demo mode use 123456." }, { status: 400 });
+        }
       }
-
-      if (record.code !== otp) {
-        return NextResponse.json({ error: "Invalid OTP code" }, { status: 400 });
-      }
-
-      // Clear code from cache on successful validation
-      otpStore.clearEmailOtp(email);
     }
 
     return NextResponse.json({ success: true, message: "Email verified successfully" });

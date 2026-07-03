@@ -11,14 +11,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
     }
 
-    // 1. Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const isMock = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
+
+    // 1. Generate 6-digit OTP (deterministic in mock mode for serverless compatibility)
+    const otp = isMock ? "123456" : Math.floor(100000 + Math.random() * 900000).toString();
 
     // 2. Hash it
     const salt = await bcrypt.genSalt(10);
     const otpHash = await bcrypt.hash(otp, salt);
-
-    const isMock = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
 
     if (!isMock) {
       // 3. Delete old unused registration OTPs for this phone
@@ -97,7 +97,12 @@ export async function POST(request: Request) {
       console.log(`[AUTH] PHONE OTP sent via ${sentVia} to +91 ${phone}`);
     }
 
-    return NextResponse.json({ success: true, message: `OTP sent successfully (${sentVia})` });
+    // In mock mode, return the OTP in the response so the frontend can auto-fill
+    return NextResponse.json({
+      success: true,
+      message: `OTP sent successfully (${sentVia})`,
+      ...(isMock ? { otp } : {}),
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
