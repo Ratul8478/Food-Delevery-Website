@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Search, UserCheck, Shield, Check, AlertCircle } from "lucide-react";
@@ -21,16 +21,27 @@ interface Customer {
 
 export default function AdminCustomersPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [notificationToast, setNotificationToast] = useState<{ show: boolean; message: string } | null>(null);
 
-  // Mock initial list of registered customers
-  const [customers, setCustomers] = useState<Customer[]>([
-    { id: "usr_mock_123", name: "Rajesh Kumar", email: "rajesh.kumar@gmail.com", phone: "9876543210", emailVerified: true, phoneVerified: true, totalPoints: 1200, codEnabled: false, maxCodAmount: 500 },
-    { id: "102", name: "Anish Gupta", email: "anish.gupta@yahoo.com", phone: "9823456789", emailVerified: true, phoneVerified: true, totalPoints: 500, codEnabled: true, maxCodAmount: 1000 },
-    { id: "103", name: "Kirti Sen", email: "kirti.sen@outlook.com", phone: "9876123456", emailVerified: true, phoneVerified: false, totalPoints: 100, codEnabled: false, maxCodAmount: 500 },
-    { id: "104", name: "Siddharth Roy", email: "siddharth.roy@gmail.com", phone: "9911223344", emailVerified: false, phoneVerified: true, totalPoints: 0, codEnabled: false, maxCodAmount: 500 },
-    { id: "105", name: "Vikram Malhotra", email: "vikram.m@gmail.com", phone: "9899887766", emailVerified: true, phoneVerified: true, totalPoints: 2000, codEnabled: true, maxCodAmount: 1500 },
-  ]);
+  // Fetch registered customers
+  useEffect(() => {
+    async function loadCustomers() {
+      try {
+        const res = await fetch("/api/admin/customers");
+        const json = await res.json();
+        if (res.ok && json.success) {
+          setCustomers(json.data.customers);
+        }
+      } catch (e) {
+        console.error("Failed to load customer settings", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCustomers();
+  }, []);
 
   // Handle updates to COD state from the toggle component
   const handleUpdateCodSettings = (id: string, codEnabled: boolean, maxCodAmount: number) => {
@@ -110,7 +121,13 @@ export default function AdminCustomersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/20 font-light">
-                  {filteredCustomers.length > 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td colSpan={4} className="py-12 text-center text-cream-muted font-body font-light animate-pulse">
+                        Accessing customer settings registry...
+                      </td>
+                    </tr>
+                  ) : filteredCustomers.length > 0 ? (
                     filteredCustomers.map((cust) => {
                       const isBothVerified = cust.emailVerified && cust.phoneVerified;
                       return (

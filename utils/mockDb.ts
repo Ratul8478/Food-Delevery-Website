@@ -111,6 +111,8 @@ const globalDb = global as unknown as {
   customerSettings: Record<string, CustomerSettings>;
   referrals: Referral[];
   notifications: Notification[];
+  globalCodEnabled?: boolean;
+  globalMaxCodAmount?: number;
 };
 
 // Seed initial mockup data if empty
@@ -164,7 +166,63 @@ if (!globalDb.profiles) {
       referred_by: null,
       total_points: 1200,
       discount_tier: "silver",
-      created_at: new Date().toISOString(),
+      created_at: new Date("2026-05-01").toISOString(),
+    },
+    {
+      id: "102",
+      full_name: "Anish Gupta",
+      email: "anish.gupta@yahoo.com",
+      phone: "9823456789",
+      email_verified: true,
+      phone_verified: true,
+      role: "customer",
+      referral_code: "SPICE102",
+      referred_by: null,
+      total_points: 500,
+      discount_tier: "bronze",
+      created_at: new Date("2026-05-15").toISOString(),
+    },
+    {
+      id: "103",
+      full_name: "Kirti Sen",
+      email: "kirti.sen@outlook.com",
+      phone: "9876123456",
+      email_verified: true,
+      phone_verified: false,
+      role: "customer",
+      referral_code: "SPICE103",
+      referred_by: null,
+      total_points: 100,
+      discount_tier: "bronze",
+      created_at: new Date("2026-06-01").toISOString(),
+    },
+    {
+      id: "104",
+      full_name: "Siddharth Roy",
+      email: "siddharth.roy@gmail.com",
+      phone: "9911223344",
+      email_verified: false,
+      phone_verified: true,
+      role: "customer",
+      referral_code: "SPICE104",
+      referred_by: null,
+      total_points: 0,
+      discount_tier: "bronze",
+      created_at: new Date("2026-06-10").toISOString(),
+    },
+    {
+      id: "105",
+      full_name: "Vikram Malhotra",
+      email: "vikram.m@gmail.com",
+      phone: "9899887766",
+      email_verified: true,
+      phone_verified: true,
+      role: "customer",
+      referral_code: "SPICE105",
+      referred_by: null,
+      total_points: 2000,
+      discount_tier: "gold",
+      created_at: new Date("2026-04-20").toISOString(),
     },
   ];
 }
@@ -183,23 +241,169 @@ if (!globalDb.cartItems) {
 }
 
 if (!globalDb.orders) {
-  globalDb.orders = [];
+  globalDb.orders = [
+    // June 2026 (Last Month)
+    {
+      id: "ORD-2026-000101",
+      user_id: "102",
+      status: "delivered",
+      payment_method: "online",
+      payment_method_type: "card",
+      payment_status: "paid",
+      subtotal: 700,
+      discount_amount: 140,
+      tax: 28,
+      delivery_charge: 50,
+      total_amount: 638,
+      address_id: "addr-1",
+      notes: "Doorbell is broken",
+      created_at: "2026-06-12T19:30:00.000Z",
+    },
+    {
+      id: "ORD-2026-000102",
+      user_id: "102",
+      status: "delivered",
+      payment_method: "online",
+      payment_method_type: "upi",
+      payment_status: "paid",
+      subtotal: 500,
+      discount_amount: 100,
+      tax: 20,
+      delivery_charge: 50,
+      total_amount: 470,
+      address_id: "addr-1",
+      notes: null,
+      created_at: "2026-06-25T20:15:00.000Z",
+    },
+    {
+      id: "ORD-2026-000103",
+      user_id: "103",
+      status: "delivered",
+      payment_method: "online",
+      payment_method_type: "card",
+      payment_status: "paid",
+      subtotal: 900,
+      discount_amount: 180,
+      tax: 36,
+      delivery_charge: 0,
+      total_amount: 756,
+      address_id: "addr-2",
+      notes: "Please call on arrival",
+      created_at: "2026-06-15T13:45:00.000Z",
+    },
+    {
+      id: "ORD-2026-000104",
+      user_id: "105",
+      status: "delivered",
+      payment_method: "online",
+      payment_method_type: "wallet",
+      payment_status: "paid",
+      subtotal: 1500,
+      discount_amount: 600,
+      tax: 45,
+      delivery_charge: 0,
+      total_amount: 945,
+      address_id: "addr-3",
+      notes: null,
+      created_at: "2026-06-08T21:00:00.000Z",
+    },
+    {
+      id: "ORD-2026-000105",
+      user_id: "105",
+      status: "delivered",
+      payment_method: "online",
+      payment_method_type: "card",
+      payment_status: "paid",
+      subtotal: 2100,
+      discount_amount: 840,
+      tax: 63,
+      delivery_charge: 0,
+      total_amount: 1323,
+      address_id: "addr-3",
+      notes: "Extra napkins",
+      created_at: "2026-06-22T20:30:00.000Z",
+    },
+    // July 2026 (Current Month)
+    {
+      id: "ORD-2026-000106",
+      user_id: "102",
+      status: "delivered",
+      payment_method: "cod",
+      payment_method_type: null,
+      payment_status: "paid",
+      subtotal: 1200,
+      discount_amount: 240,
+      tax: 48,
+      delivery_charge: 0,
+      total_amount: 1008,
+      address_id: "addr-1",
+      notes: "Cash ready",
+      created_at: "2026-07-01T12:00:00.000Z",
+    },
+    {
+      id: "ORD-2026-000107",
+      user_id: "104",
+      status: "pending",
+      payment_method: "cod",
+      payment_method_type: null,
+      payment_status: "cod_pending",
+      subtotal: 450,
+      discount_amount: 90,
+      tax: 18,
+      delivery_charge: 50,
+      total_amount: 428,
+      address_id: "addr-4",
+      notes: "First time order",
+      created_at: "2026-07-02T18:10:00.000Z",
+    },
+    {
+      id: "ORD-2026-000108",
+      user_id: "105",
+      status: "preparing",
+      payment_method: "online",
+      payment_method_type: "card",
+      payment_status: "paid",
+      subtotal: 890,
+      discount_amount: 356,
+      tax: 27,
+      delivery_charge: 0,
+      total_amount: 561,
+      address_id: "addr-3",
+      notes: "Make it spicy!",
+      created_at: "2026-07-02T22:15:00.000Z",
+    },
+  ];
 }
 
 if (!globalDb.orderItems) {
-  globalDb.orderItems = [];
+  globalDb.orderItems = [
+    { id: "oi-101a", order_id: "ORD-2026-000101", menu_item_id: "8", name: "Paneer Butter Masala", price: 389, quantity: 1, special_note: null },
+    { id: "oi-101b", order_id: "ORD-2026-000101", menu_item_id: "9", name: "Dal Makhani", price: 329, quantity: 1, special_note: null },
+    { id: "oi-102a", order_id: "ORD-2026-000102", menu_item_id: "10", name: "Chicken Tikka Masala", price: 399, quantity: 1, special_note: null },
+    { id: "oi-103a", order_id: "ORD-2026-000103", menu_item_id: "11", name: "Mutton Rogan Josh", price: 549, quantity: 1, special_note: null },
+    { id: "oi-104a", order_id: "ORD-2026-000104", menu_item_id: "14", name: "Chicken Dum Biryani", price: 429, quantity: 3, special_note: null },
+    { id: "oi-105a", order_id: "ORD-2026-000105", menu_item_id: "13", name: "Veg Dum Biryani", price: 299, quantity: 5, special_note: null },
+    { id: "oi-106a", order_id: "ORD-2026-000106", menu_item_id: "8", name: "Paneer Butter Masala", price: 389, quantity: 3, special_note: null },
+    { id: "oi-107a", order_id: "ORD-2026-000107", menu_item_id: "1", name: "Paneer Tikka", price: 289, quantity: 1, special_note: null },
+    { id: "oi-108a", order_id: "ORD-2026-000108", menu_item_id: "10", name: "Chicken Tikka Masala", price: 399, quantity: 2, special_note: null },
+  ];
 }
 
 if (!globalDb.customerSettings) {
   globalDb.customerSettings = {
-    usr_mock_123: {
-      user_id: "usr_mock_123",
-      cod_enabled: false, // COD is disabled by default per rule
-      max_cod_amount: 5000,
-      cod_enabled_by: null,
-      cod_enabled_at: null,
-    },
+    usr_mock_123: { user_id: "usr_mock_123", cod_enabled: false, max_cod_amount: 5000, cod_enabled_by: null, cod_enabled_at: null },
+    102: { user_id: "102", cod_enabled: true, max_cod_amount: 1500, cod_enabled_by: "usr_mock_123", cod_enabled_at: new Date("2026-06-01").toISOString() },
+    103: { user_id: "103", cod_enabled: false, max_cod_amount: 500, cod_enabled_by: null, cod_enabled_at: null },
+    104: { user_id: "104", cod_enabled: false, max_cod_amount: 500, cod_enabled_by: null, cod_enabled_at: null },
+    105: { user_id: "105", cod_enabled: true, max_cod_amount: 2500, cod_enabled_by: "usr_mock_123", cod_enabled_at: new Date("2026-06-02").toISOString() },
   };
+}
+
+if (globalDb.globalCodEnabled === undefined) {
+  globalDb.globalCodEnabled = false;
+}
+if (globalDb.globalMaxCodAmount === undefined) {
+  globalDb.globalMaxCodAmount = 1000;
 }
 
 if (!globalDb.referrals) {
@@ -214,6 +418,38 @@ if (!globalDb.notifications) {
 
 // DATABASE INTERFACE
 export const mockDb = {
+  // Global Settings
+  getGlobalCodSettings() {
+    return {
+      global_cod_enabled: globalDb.globalCodEnabled ?? false,
+      global_max_cod_amount: globalDb.globalMaxCodAmount ?? 1000,
+    };
+  },
+
+  updateGlobalCodSettings(enabled: boolean, maxAmount?: number) {
+    globalDb.globalCodEnabled = enabled;
+    if (maxAmount !== undefined) {
+      globalDb.globalMaxCodAmount = maxAmount;
+    }
+    // Update all users' COD settings as well per rules
+    globalDb.profiles.forEach((p) => {
+      if (!globalDb.customerSettings[p.id]) {
+        globalDb.customerSettings[p.id] = {
+          user_id: p.id,
+          cod_enabled: enabled,
+          max_cod_amount: maxAmount ?? 1000,
+          cod_enabled_by: null,
+          cod_enabled_at: null,
+        };
+      } else {
+        globalDb.customerSettings[p.id].cod_enabled = enabled;
+        if (maxAmount !== undefined) {
+          globalDb.customerSettings[p.id].max_cod_amount = maxAmount;
+        }
+      }
+    });
+    return this.getGlobalCodSettings();
+  },
   // Profiles
   getProfile(id: string): Profile | null {
     return globalDb.profiles.find((p) => p.id === id) || null;

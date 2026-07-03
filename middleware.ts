@@ -16,12 +16,8 @@ export function middleware(request: NextRequest) {
 
   // 1. Protect Admin routes
   if (path.startsWith("/admin")) {
-    // For demo/prototype testing purposes, we let customers test the admin console if they want,
-    // but in strict mode we restrict to role='admin'. To make it professional, let's check:
     if (!user || user.role !== "admin") {
-      // In this demo, we allow accessing /admin for review purposes, but we add a query warning.
-      // In production, we redirect:
-      // return NextResponse.redirect(new URL("/login?error=unauthorized", request.url));
+      return NextResponse.redirect(new URL("/login?error=unauthorized", request.url));
     }
   }
 
