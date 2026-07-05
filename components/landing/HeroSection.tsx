@@ -46,14 +46,14 @@ export default function HeroSection() {
   };
 
   const wordVariants = {
-    initial: { y: 50, opacity: 0 },
+    initial: { y: 20, opacity: 0, filter: "blur(12px)" },
     animate: {
       y: 0,
       opacity: 1,
+      filter: "blur(0px)",
       transition: {
-        type: "spring",
-        stiffness: 60,
-        damping: 12,
+        duration: 0.8,
+        ease: [0.2, 0.65, 0.3, 0.9],
       },
     },
   };
@@ -153,24 +153,24 @@ export default function HeroSection() {
             className="flex flex-col font-display text-[clamp(2.5rem,6.5vw,5.5rem)] leading-[1.05] tracking-tight max-w-4xl"
           >
             {/* Line 1 */}
-            <div className="flex flex-wrap gap-x-4 overflow-hidden py-1">
+            <div className="flex flex-wrap gap-x-4 overflow-visible py-1">
               {line1Words.map((word, index) => (
                 <motion.span
                   key={index}
                   variants={wordVariants}
-                  className="text-cream italic"
+                  className="text-cream italic inline-block"
                 >
                   {word}
                 </motion.span>
               ))}
             </div>
             {/* Line 2 */}
-            <div className="flex flex-wrap gap-x-4 overflow-hidden py-1">
+            <div className="flex flex-wrap gap-x-4 overflow-visible py-1">
               {line2Words.map((word, index) => (
                 <motion.span
                   key={index}
                   variants={wordVariants}
-                  className={word === "Tradition" ? "text-spice-gradient" : "text-cream"}
+                  className={`${word === "Tradition" ? "text-spice-gradient" : "text-cream"} inline-block`}
                 >
                   {word}
                 </motion.span>
