@@ -4,6 +4,7 @@ import FoodShowcaseSlider from "@/components/landing/FoodShowcaseSlider";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import MenuCategoriesSection from "@/components/landing/MenuCategoriesSection";
 import OurStorySection from "@/components/landing/OurStorySection";
+import SecretSpicesSection from "@/components/landing/SecretSpicesSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import ReferralBannerSection from "@/components/landing/ReferralBannerSection";
 import CTASection from "@/components/landing/CTASection";
@@ -32,6 +33,11 @@ export default function Home() {
 
         {/* Asymmetric Our Story Heritage Section */}
         <OurStorySection />
+
+        <SectionDivider />
+
+        {/* Interactive Spotlight Reveal - Raw Spices to Plated Dish */}
+        <SecretSpicesSection />
 
         <SectionDivider />
 
