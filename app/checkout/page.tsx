@@ -72,6 +72,17 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated, paymentMethod]);
 
+  // Keep user profile data in sync if logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setAddress((prev) => ({
+        ...prev,
+        fullName: prev.fullName || user.fullName || "",
+        phone: prev.phone || user.phone || "",
+      }));
+    }
+  }, [isAuthenticated, user]);
+
   // Admin Simulator Toggle handler
   const handleToggleCodSimulator = async () => {
     if (!user) return;

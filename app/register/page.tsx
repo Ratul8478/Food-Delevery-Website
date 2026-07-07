@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -11,6 +11,7 @@ import confetti from "canvas-confetti";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Eye, EyeOff, Check, AlertCircle, Copy, CheckCircle, Mail, MessageSquare, Phone, Shield, ArrowRight, ArrowLeft } from "lucide-react";
+import { useCart } from "@/lib/cart-context";
 
 // Form validation schema
 const registerSchema = z
@@ -41,15 +42,19 @@ const registerSchema = z
 
 type RegisterInput = z.infer<typeof registerSchema>;
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialStep = Number(searchParams.get("step")) || 1;
+  const redirectUrl = searchParams.get("redirect") || "";
+  const { syncCart, isAuthenticated, user } = useCart();
   
   // Signup Flow Steps:
   // 1: Account Info (Customer vs Admin)
   // 2: Choose Verification Channel
   // 3: Verify OTP Code
   // 4: Registration Success Welcome
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialStep);
   const [role, setRole] = useState<"customer" | "admin">("customer");
   const [adminPasscode, setAdminPasscode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -72,6 +77,7 @@ export default function RegisterPage() {
     handleSubmit,
     watch,
     trigger,
+    setValue,
     formState: { errors, isValid },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -85,6 +91,15 @@ export default function RegisterPage() {
       referralCode: "",
     },
   });
+
+  // Populate form values from authenticated user session if redirected
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setValue("fullName", user.fullName || "");
+      setValue("email", user.email || "");
+      setValue("phone", user.phone || "");
+    }
+  }, [isAuthenticated, user, setValue]);
 
   const watchPassword = watch("password", "");
   const watchEmail = watch("email", "");
@@ -280,6 +295,8 @@ export default function RegisterPage() {
       if (!regRes.ok) {
         throw new Error(regData.error || "Failed to finalize account database creation.");
       }
+
+      await syncCart();
 
       setGeneratedReferralCode(regData.referralCode || "SPICE8Y2");
 
@@ -794,10 +811,10 @@ export default function RegisterPage() {
                   </p>
 
                   <Link
-                    href="/menu"
-                    className="w-full bg-spice text-cream py-4 rounded-sm font-semibold hover:bg-spice-light active:scale-98 transition-all block text-sm"
+                    href={redirectUrl || "/menu"}
+                    className="w-full bg-spice text-cream py-4 rounded-sm font-semibold hover:bg-spice-light active:scale-98 transition-all block text-sm text-center"
                   >
-                    Enter the Kitchen Menu
+                    {redirectUrl ? "Proceed to Checkout" : "Enter the Kitchen Menu"}
                   </Link>
                 </motion.div>
               )}
@@ -810,5 +827,17 @@ export default function RegisterPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full h-screen bg-mahogany flex items-center justify-center">
+        <span className="font-display text-cream animate-pulse">Namaste...</span>
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   );
 }

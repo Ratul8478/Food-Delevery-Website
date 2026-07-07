@@ -7,11 +7,13 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Eye, EyeOff, AlertCircle, KeyRound, Phone, Mail, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCart } from "@/lib/cart-context";
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/menu";
+  const { syncCart } = useCart();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -54,6 +56,7 @@ function LoginContent() {
         throw new Error(data.error || "Invalid credentials");
       }
 
+      await syncCart();
       router.push(redirectUrl);
     } catch (err: any) {
       setServerError(err.message);
@@ -241,7 +244,7 @@ function LoginContent() {
 
             <div className="border-t border-border/40 mt-8 pt-6 text-center text-xs font-body">
               <span className="text-cream-muted">New to Rasoi House? </span>
-              <Link href="/register" className="text-spice hover:underline font-semibold">
+              <Link href={`/register${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`} className="text-spice hover:underline font-semibold">
                 Sign Up Here
               </Link>
             </div>
