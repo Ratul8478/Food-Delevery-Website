@@ -3,16 +3,29 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Check, AlertCircle, ShoppingBag, ArrowLeft, CreditCard, Sparkles, Calendar, MapPin, Phone, User } from "lucide-react";
+import { Check, AlertCircle, ShoppingBag, ArrowLeft, CreditCard, Sparkles, Calendar, MapPin, Phone, User, Users, Info, DollarSign } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import confetti from "canvas-confetti";
+
+interface ScenarioPreset {
+  id: string;
+  name: string;
+  guests: number;
+  icon: string;
+  description: string;
+}
 
 export default function BudgetCalculatorPage() {
   const { isAuthenticated, user } = useCart();
 
-  // Calculator State
+  // Service Type State
   const [serviceType, setServiceType] = useState<"food_only" | "food_setup" | "full_service">("full_service");
-  const [guests, setGuests] = useState<number>(50);
+  
+  // Guest Scenario State
+  const [guestScenario, setGuestScenario] = useState<string>("10");
+  const [guests, setGuests] = useState<number>(10);
+  
+  // Add-ons & Timeline State
   const [needDesserts, setNeedDesserts] = useState<boolean>(false);
   const [needLiveCounter, setNeedLiveCounter] = useState<boolean>(false);
   const [timeline, setTimeline] = useState<"advance" | "standard" | "express">("advance");
@@ -31,6 +44,18 @@ export default function BudgetCalculatorPage() {
     paymentMethod: "card" as "card" | "upi" | "wallet" | "cod",
   });
 
+  // Guest scenario presets configuration
+  const presets: ScenarioPreset[] = [
+    { id: "1", name: "Solo Feast Box", guests: 1, icon: "👤", description: "Indulgent gourmet box for one" },
+    { id: "2", name: "Jugalbandi Couple", guests: 2, icon: "👩‍❤️‍👨", description: "Romantic fine-dining for two" },
+    { id: "3", name: "Trio Family Pack", guests: 3, icon: "👪", description: "Cozy three-person family box" },
+    { id: "4", name: "Parivaar Family Feast", guests: 4, icon: "👨‍👩‍👧‍👦", description: "Classic four-person family box" },
+    { id: "5", name: "Yaara Micro Group", guests: 5, icon: "🤝", description: "Intimate get-together package" },
+    { id: "10", name: "Utsav Celebration", guests: 10, icon: "🎉", description: "Milestone party or home festival" },
+    { id: "15", name: "Mega Gathering Pack", guests: 15, icon: "✨", description: "Grand family dinner package" },
+    { id: "custom", name: "Custom Banquet Gala", guests: 50, icon: "🕌", description: "Custom size guest configurations" },
+  ];
+
   // Keep user profile data in sync if logged in
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -42,23 +67,35 @@ export default function BudgetCalculatorPage() {
     }
   }, [isAuthenticated, user]);
 
+  // Adjust guest counts when scenario presets are clicked
+  const handleScenarioChange = (presetId: string) => {
+    setGuestScenario(presetId);
+    const selected = presets.find((p) => p.id === presetId);
+    if (selected) {
+      setGuests(selected.guests);
+    }
+  };
+
   // Pricing calculations
   const calculatePrice = () => {
-    let base = 15000;
     let perGuest = 900;
+    let baseSurcharge = 3000; // Live staff & logistics minimum overhead fee
 
     if (serviceType === "food_only") {
-      base = 5000;
       perGuest = 400;
+      baseSurcharge = 0; // Standard drop-off delivery
     } else if (serviceType === "food_setup") {
-      base = 8000;
       perGuest = 600;
+      baseSurcharge = 1200; // Buffets require set up, equipment transit
     }
 
-    let total = Math.max(base, base + (guests - 1) * perGuest);
+    let total = guests * perGuest + baseSurcharge;
+    
+    // Addons calculation
     if (needDesserts) total += guests * 150;
     if (needLiveCounter) total += guests * 250;
 
+    // Timeline Notice Fee
     if (timeline === "express") {
       total += guests * 100;
     } else if (timeline === "standard") {
@@ -69,13 +106,15 @@ export default function BudgetCalculatorPage() {
   };
 
   const calculateAgencyCost = () => {
-    const perGuest = serviceType === "full_service" ? 1500 : 800;
-    return 25000 + (guests - 1) * perGuest;
+    let perGuest = serviceType === "full_service" ? 1600 : serviceType === "food_setup" ? 1100 : 700;
+    let setupFee = serviceType === "full_service" ? 15000 : serviceType === "food_setup" ? 8000 : 3000;
+    return guests * perGuest + setupFee;
   };
 
   const calculateFreelancerCost = () => {
-    const perGuest = serviceType === "full_service" ? 1000 : 500;
-    return 12000 + (guests - 1) * perGuest;
+    let perGuest = serviceType === "full_service" ? 1100 : serviceType === "food_setup" ? 800 : 500;
+    let setupFee = serviceType === "full_service" ? 8000 : serviceType === "food_setup" ? 4000 : 1500;
+    return guests * perGuest + setupFee;
   };
 
   const finalCost = calculatePrice();
@@ -139,26 +178,120 @@ export default function BudgetCalculatorPage() {
               Plan a premium Indian feast within your budget
             </h2>
             <p className="font-body text-sm text-cream-muted max-w-xl mx-auto mt-4 leading-relaxed">
-              Configure your event size, menu enhancements, and service style. Get immediate visual price comparisons and book your custom catering package directly.
+              Analyze and compare custom-built packages. Configure guest counts from solo dinners to large custom banquet galas, selecting your desired service setup and notice timeline.
             </p>
           </div>
 
           {/* Calculator Layout Box */}
           <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl border border-border/30 bg-warm-dark">
             {/* LEFT COLUMN: Calculator Config form */}
-            <div className="bg-[#120500] p-8 lg:p-12 flex flex-col justify-between">
+            <div className="bg-[#120500] p-6 md:p-8 lg:p-12 flex flex-col justify-between">
               <div className="space-y-8 divide-y divide-white/10 select-none">
-                {/* 1. Service Type */}
+                
+                {/* 1. Dining Scenario & Group Size */}
                 <div className="pb-8">
                   <h3 className="font-display text-lg text-turmeric-light mb-4 flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-spice rounded-full block" />
-                    What service model do you need?
+                    Who are we serving today?
+                  </h3>
+                  
+                  {/* Scenario presets grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                    {presets.map((preset) => (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => {
+                          if (step === "calculate") {
+                            handleScenarioChange(preset.id);
+                          }
+                        }}
+                        disabled={step !== "calculate"}
+                        className={`p-3 rounded-xl border text-center flex flex-col items-center justify-between transition-all select-none ${
+                          guestScenario === preset.id
+                            ? "border-spice bg-spice/10"
+                            : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20"
+                        } ${step !== "calculate" && "opacity-60 cursor-not-allowed"}`}
+                      >
+                        <span className="text-2xl mb-1.5 block">{preset.icon}</span>
+                        <div className="flex-grow flex flex-col justify-center">
+                          <span className="font-body text-xs font-bold text-white leading-tight">
+                            {preset.name}
+                          </span>
+                          <span className="text-[9px] text-white/40 font-body block mt-0.5 leading-tight">
+                            {preset.id === "custom" ? "Custom Range" : `${preset.guests} Guest${preset.guests > 1 ? "s" : ""}`}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Dynamic Guest Slider and Text Input if Custom selected */}
+                  {guestScenario === "custom" && (
+                    <div className="mt-6 p-4 rounded-xl border border-white/10 bg-white/5 space-y-4 animate-fadeIn">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-white">Guest Volume Slider</span>
+                        
+                        {/* Number Input Field */}
+                        <div className="flex items-center gap-2 bg-white/10 border border-white/20 rounded px-2.5 py-1">
+                          <input
+                            type="number"
+                            min="16"
+                            max="300"
+                            value={guests}
+                            disabled={step !== "calculate"}
+                            onChange={(e) => {
+                              let val = Math.min(300, Math.max(16, Number(e.target.value)));
+                              setGuests(val);
+                            }}
+                            className="w-12 bg-transparent text-center text-xs font-mono font-bold text-spice focus:outline-none"
+                          />
+                          <span className="text-[10px] text-white/50 uppercase font-mono">Guests</span>
+                        </div>
+                      </div>
+
+                      <input
+                        type="range"
+                        min="16"
+                        max="300"
+                        step="1"
+                        value={guests}
+                        onChange={(e) => {
+                          if (step === "calculate") {
+                            setGuests(Number(e.target.value));
+                          }
+                        }}
+                        disabled={step !== "calculate"}
+                        className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-spice"
+                      />
+                      <div className="flex justify-between text-[9px] font-mono text-white/40">
+                        <span>16 guests</span>
+                        <span>150 guests</span>
+                        <span>300 guests</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Warning Notice for setups with low guest count */}
+                  {guests < 10 && serviceType !== "food_only" && (
+                    <div className="mt-3 p-3 bg-spice/10 border border-spice/20 text-spice-light rounded-lg flex items-start gap-2 text-[10px] leading-normal font-body">
+                      <Info size={14} className="shrink-0 mt-0.5 text-spice" />
+                      <span>Note: Banquet setup & dedicated staff are heavily optimized for 10+ guests. Standard drop-off is recommended for smaller plates.</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Service Model */}
+                <div className="pt-8 pb-8">
+                  <h3 className="font-display text-lg text-turmeric-light mb-4 flex items-center gap-2">
+                    <span className="w-1.5 h-6 bg-spice rounded-full block" />
+                    Catering Service Model
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {[
-                      { id: "food_only", label: "Food Only", desc: "Premium delivery" },
-                      { id: "food_setup", label: "Food & Setup", desc: "Buffet display" },
-                      { id: "full_service", label: "Full Service", desc: "Staff & Live Chef" },
+                      { id: "food_only", label: "Gourmet Drop-Off", desc: "Express delivery & plating" },
+                      { id: "food_setup", label: "Heritage Buffet", desc: "Chafing & decor setup" },
+                      { id: "full_service", label: "Imperial Feast", desc: "Live chef & butler staff" },
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -189,7 +322,7 @@ export default function BudgetCalculatorPage() {
                             )}
                           </div>
                         </div>
-                        <span className="text-[10px] text-white/55 mt-2 block font-body">
+                        <span className="text-[10px] text-white/55 mt-2 block font-body leading-tight">
                           {item.desc}
                         </span>
                       </button>
@@ -197,45 +330,11 @@ export default function BudgetCalculatorPage() {
                   </div>
                 </div>
 
-                {/* 2. Number of Guests (Slider) */}
-                <div className="pt-8 pb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-display text-lg text-turmeric-light flex items-center gap-2">
-                      <span className="w-1.5 h-6 bg-spice rounded-full block" />
-                      Number of Guests
-                    </h3>
-                    <span className="font-mono text-xl font-bold text-spice">
-                      {guests} <span className="text-xs text-white/60">Guests</span>
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="300"
-                    step="5"
-                    value={guests}
-                    onChange={(e) => {
-                      if (step === "calculate") {
-                        setGuests(Number(e.target.value));
-                      }
-                    }}
-                    disabled={step !== "calculate"}
-                    className={`w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-spice ${
-                      step !== "calculate" && "opacity-50 cursor-not-allowed"
-                    }`}
-                  />
-                  <div className="flex justify-between text-[10px] font-mono text-white/40 mt-2">
-                    <span>10 guests</span>
-                    <span>150 guests</span>
-                    <span>300 guests</span>
-                  </div>
-                </div>
-
-                {/* 3. Add-ons (Checkboxes) */}
+                {/* 3. Event Add-ons */}
                 <div className="pt-8 pb-8">
                   <h3 className="font-display text-lg text-turmeric-light mb-4 flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-spice rounded-full block" />
-                    Event Add-ons
+                    Gourmet Enhancements
                   </h3>
                   <div className="space-y-3">
                     {/* Addon 1 */}
@@ -268,7 +367,7 @@ export default function BudgetCalculatorPage() {
                             Premium Desserts & Beverages Platter
                           </span>
                           <span className="text-[10px] text-white/50 block font-body">
-                            Saffron Rasmalai, Gulab Jamuns, Shahi Lassis
+                            Saffron Rasmalai, Warm Gulab Jamuns, Mango Lassis
                           </span>
                         </div>
                       </div>
@@ -304,10 +403,10 @@ export default function BudgetCalculatorPage() {
                         </div>
                         <div>
                           <span className="text-xs font-semibold text-white block">
-                            Live Chef Tandoor Counters
+                            Live Chef Tandoor & Chaat Counters
                           </span>
                           <span className="text-[10px] text-white/50 block font-body">
-                            Hot skewered kebabs, fresh naans, live chaats
+                            Hot skewered seekh kebabs, live panipuri counters
                           </span>
                         </div>
                       </div>
@@ -318,11 +417,11 @@ export default function BudgetCalculatorPage() {
                   </div>
                 </div>
 
-                {/* 4. Prep Time / Timeline (Radio) */}
+                {/* 4. Prep Time / Notice Timeline */}
                 <div className="pt-8">
                   <h3 className="font-display text-lg text-turmeric-light mb-4 flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-spice rounded-full block" />
-                    How fast do you need the catering?
+                    Notice Notice timeline
                   </h3>
                   <div className="space-y-3">
                     {[
@@ -371,7 +470,7 @@ export default function BudgetCalculatorPage() {
               {/* Decorative brand footer in dark column */}
               <div className="border-t border-white/5 mt-10 pt-6 text-[10px] text-white/30 font-body flex justify-between items-center">
                 <span>© Rasoi House Catering Services</span>
-                <span>✨ Pure Hygiene & Integrity Certified</span>
+                <span>✨ ISO 22000 Food Safety Certified</span>
               </div>
             </div>
 
@@ -382,10 +481,10 @@ export default function BudgetCalculatorPage() {
                 <div className="flex flex-col justify-between h-full space-y-6">
                   <div>
                     <h3 className="font-display text-2xl text-cream-warm mb-1">
-                      Estimated Cost
+                      Estimated Cost Comparison
                     </h3>
                     <p className="font-body text-xs text-cream-muted leading-relaxed">
-                      Below is an estimate comparing our premium live kitchen packages against industry competitors.
+                      Real-time estimation comparing our premium fresh kitchen values against standard hospitality rates.
                     </p>
                   </div>
 
@@ -395,7 +494,7 @@ export default function BudgetCalculatorPage() {
                     <div className="bg-mahogany-surface/40 border border-border/40 rounded-xl p-5 space-y-2">
                       <div className="flex justify-between items-center text-[10px] font-mono text-cream-muted uppercase font-bold tracking-wider">
                         <span>Traditional Premium Catering</span>
-                        <span className="text-red-700">Minimum Charge</span>
+                        <span className="text-red-700">Heavy Markups</span>
                       </div>
                       <div className="flex justify-between items-baseline">
                         <span className="text-sm font-semibold text-cream">Typical Agency Quote</span>
@@ -404,7 +503,7 @@ export default function BudgetCalculatorPage() {
                         </span>
                       </div>
                       <p className="text-[10px] text-cream-muted leading-normal">
-                        ❌ High coordinator markups, rigid contracts, and hidden logistics charges.
+                        ❌ High agency commissions, rigid menus, and setup coordination overheads.
                       </p>
                     </div>
 
@@ -421,7 +520,7 @@ export default function BudgetCalculatorPage() {
                         </span>
                       </div>
                       <p className="text-[10px] text-cream-muted leading-normal">
-                        ❌ Limited buffet layout items, standard packaging, and zero live counters support.
+                        ❌ Lack of live counters support, standard transport packaging, and coordination hassles.
                       </p>
                     </div>
 
@@ -431,14 +530,14 @@ export default function BudgetCalculatorPage() {
                       <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
                       
                       <div className="flex justify-between items-center text-[10px] font-mono text-white/80 uppercase font-bold tracking-wider">
-                        <span>Rasoi House Banquet Package</span>
+                        <span>Rasoi House Banquet Value</span>
                         <span className="bg-white/20 px-2 py-0.5 rounded text-white flex items-center gap-1 font-sans">
-                          <Sparkles size={9} /> Best Value
+                          <Sparkles size={9} /> Custom Estimate
                         </span>
                       </div>
                       
                       <div className="flex justify-between items-baseline">
-                        <span className="text-sm font-semibold text-white">Your Custom Estimate</span>
+                        <span className="text-sm font-semibold text-white">Your Custom Quote</span>
                         <span className="text-4xl font-bold font-mono">
                           ₹{finalCost.toLocaleString()}
                         </span>
@@ -566,7 +665,7 @@ export default function BudgetCalculatorPage() {
                           { id: "card", label: "Credit Card", icon: <CreditCard size={13} /> },
                           { id: "upi", label: "UPI (Paytm/GPay)", icon: <span className="font-sans font-bold text-[10px]">UPI</span> },
                           { id: "wallet", label: "Rasoi Wallet", icon: <ShoppingBag size={13} /> },
-                          { id: "cod", label: "Advance Deposit (COD)", icon: <Sparkles size={13} /> },
+                          { id: "cod", label: "Booking Deposit (COD)", icon: <Sparkles size={13} /> },
                         ].map((m) => (
                           <button
                             key={m.id}
@@ -632,7 +731,9 @@ export default function BudgetCalculatorPage() {
                       <div className="p-3.5 bg-mahogany-surface/40 border border-border/50 rounded-xl text-center">
                         <span className="text-[10px] text-cream-muted block">Available Wallet Balance</span>
                         <span className="text-lg font-bold font-mono text-cream block mt-0.5">₹1,200.00</span>
-                        <span className="text-[9px] text-red-800 block mt-1">❌ Insufficient balance for this order. Please use another method.</span>
+                        {finalCost > 1200 && (
+                          <span className="text-[9px] text-red-800 block mt-1">❌ Insufficient balance for this order. Please use another method.</span>
+                        )}
                       </div>
                     )}
 
@@ -665,7 +766,7 @@ export default function BudgetCalculatorPage() {
                     <div className="flex justify-between border-b border-border/30 pb-2">
                       <span className="text-cream-muted font-sans font-semibold">Catering Model</span>
                       <span className="text-cream font-bold">
-                        {serviceType === "food_only" ? "Food Only" : serviceType === "food_setup" ? "Food & Setup" : "Full Service"}
+                        {serviceType === "food_only" ? "Gourmet Drop-Off" : serviceType === "food_setup" ? "Heritage Buffet" : "Imperial Feast"}
                       </span>
                     </div>
                     <div className="flex justify-between border-b border-border/30 pb-2">
