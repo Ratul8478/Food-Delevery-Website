@@ -198,11 +198,21 @@ export default function CartDrawer() {
                   </div>
                 </div>
 
+                <div className="pt-2 text-center">
+                  <Link
+                    href="/budget"
+                    onClick={() => setCartOpen(false)}
+                    className="text-xs font-semibold text-spice hover:text-spice-light underline flex items-center justify-center gap-1 transition-all"
+                  >
+                    🎉 Planning a party? Try our Catering Budget Estimator
+                  </Link>
+                </div>
+
                 {/* Checkout CTA */}
                 <Link
                   href="/checkout"
                   onClick={() => setCartOpen(false)}
-                  className="w-full bg-spice text-cream py-3.5 rounded-sm font-semibold text-sm flex items-center justify-center gap-2 hover:bg-spice-light active:scale-[0.98] transition-all shadow-md mt-4"
+                  className="w-full bg-spice text-cream py-3.5 rounded-sm font-semibold text-sm flex items-center justify-center gap-2 hover:bg-spice-light active:scale-[0.98] transition-all shadow-md"
                 >
                   Proceed to Checkout
                   <ArrowRight size={15} />
